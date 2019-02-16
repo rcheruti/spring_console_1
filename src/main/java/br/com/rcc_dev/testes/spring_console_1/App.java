@@ -1,5 +1,11 @@
 package br.com.rcc_dev.testes.spring_console_1;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -31,7 +37,7 @@ public class App implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		log.info("Iniciando App. Config: {}", config );
+		log.info("Iniciando App. Config: {}", config);
 
 		// ----
 		Options options = new Options();
@@ -39,20 +45,29 @@ public class App implements CommandLineRunner {
 		CommandLine commands = new DefaultParser().parse(options, args);
 		// ----
 
-		if( commands.hasOption('h') ){
+		if (commands.hasOption('h')) {
 			HelpFormatter formatter = new HelpFormatter();
 			final String lf = formatter.getNewLine();
 			log.info("HELP:" + lf);
-			formatter.printHelp(120, "this.jar", 
-			  lf + "Podem ser usados os seguintes comandos:" + lf, 
-				options, 
-				lf + "Para mais informações consulte a documentação." + lf, true);
-			
+			formatter.printHelp(120, "this.jar", lf + "Podem ser usados os seguintes comandos:" + lf, options,
+					lf + "Para mais informações consulte a documentação." + lf, true);
+
 		}
 
 		log.info("Terminando App");
 	}
 
+	// ----------------------------------------
+
+	public static String contents(String arquivo) {
+		try {
+			byte[] bytes = Files.readAllBytes(Paths.get(App.class.getClassLoader().getResource(arquivo).toURI()));
+			return new String(bytes, Charset.forName("UTF-8"));
+		} catch (IOException | URISyntaxException e) {
+			log.error("Erro ao ler arquivo '{}' de dentr do JAR!", arquivo, e);
+			throw new RuntimeException(String.format("Erro ao ler arquivo '%s' de dentro do JAR!", arquivo), e);
+		}
+	}
 
 }
 
