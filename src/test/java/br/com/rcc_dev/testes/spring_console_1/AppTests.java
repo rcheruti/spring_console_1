@@ -1,8 +1,13 @@
 package br.com.rcc_dev.testes.spring_console_1;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 import org.junit.Ignore;
@@ -39,7 +44,35 @@ public class AppTests {
 		// Docs: http://unirest.io/java.html
 		String resp = Unirest.post(correiosUrl).body(correiosXml).asString().getBody();
 		log.info("Resposta: \n{}", resp);
-		//Unirest.shutdown(); 
+		// Unirest.shutdown();
+	}
+
+	@Test
+	//@Ignore
+	public void requisicaoUnirestAsync() throws UnirestException, InterruptedException, ExecutionException, IOException {
+		String correiosXml = App.contents("consultaCep.xml").replace("$cep", "02060-001");
+		// Docs: http://unirest.io/java.html
+		Unirest.setConcurrency(4, 4);
+
+		Unirest.post(correiosUrl).body(correiosXml).asStringAsync(new Call<String>(response -> {
+			log.info("Unirest...( completed 1 )");
+			String resp = response.getBody();
+			log.info("Resposta: \n{}", resp );
+		}));
+		Unirest.post(correiosUrl).body(correiosXml).asStringAsync(new Call<String>(response -> {
+			log.info("Unirest...( completed 2 )");
+			String resp = response.getBody();
+			log.info("Resposta: \n{}", resp );
+		}));
+		Unirest.post(correiosUrl).body(correiosXml).asStringAsync(new Call<String>(response -> {
+			log.info("Unirest...( completed 3 )");
+			String resp = response.getBody();
+			log.info("Resposta: \n{}", resp );
+		}));
+		log.info("Unirest...asStringAsync executado");
+		
+		Thread.currentThread().sleep(3000);
+		Unirest.shutdown(); 
 	}
 
 	@Test
@@ -64,6 +97,48 @@ public class AppTests {
 		}
 				
 	}
+
+
+	// -----------------------------
+
+	@Slf4j
+	public static class Call<T> implements Callback<T> {
+
+		private Consumer<HttpResponse<T>> completed;
+		private Consumer<UnirestException> failed;
+		private Runnable cancelled;
+
+		public Call(Consumer<HttpResponse<T>> completed){ this(completed, null, null); }
+		public Call(Consumer<HttpResponse<T>> completed, Consumer<UnirestException> failed){ this(completed, failed, null); }
+		public Call(Consumer<HttpResponse<T>> completed, Consumer<UnirestException> failed, Runnable cancelled){
+			this.completed = completed;
+			this.failed = failed;
+			this.cancelled = cancelled;
+		}
+
+		@Override
+		public void completed(HttpResponse<T> response) {
+			if( completed != null ){
+				completed.accept(response);
+			}
+		}
+		@Override
+		public void failed(UnirestException e) {
+			if( failed != null ){
+				failed.accept(e);
+			} else {
+				log.error("Erro ao executar requisição HTTP!", e);
+			}
+		}
+		@Override
+		public void cancelled() {
+			if( cancelled != null ){
+				cancelled.run();
+			} else {
+				log.warn("A requisição HTTP foi cancelada!");
+			}
+		}
+	} 
 
 }
 

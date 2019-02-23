@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "CodeLens (Launch) - App",
+      "request": "launch",
+      "mainClass": "br.com.rcc_dev.testes.spring_console_1.App",
+      "projectName": "spring_console_1",
+      "vmArgs": [
+        "-Xms6m" ,
+        "-Xmx60m" ,
+        "-XX:MaxMetaspaceSize=50m" ,
+        "-XX:MinHeapFreeRatio=1" ,
+        "-XX:MaxHeapFreeRatio=2" ,
+        "-XX:+UseG1GC" ,
+        "-XX:ReservedCodeCacheSize=8m" ,
+        "-XX:CompileThreshold=250" ,
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package br.com.rcc_dev.testes.spring_console_1;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -38,6 +39,8 @@ public class App implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		log.info("Iniciando App. Config: {}", config);
+		log.info("ManagementFactory.getThreadMXBean().getThreadCount: {}", ManagementFactory.getThreadMXBean().getThreadCount() );
+		log.info("Thread.activeCount: {}", Thread.activeCount() );
 
 		// ----
 		Options options = new Options();
